@@ -1,123 +1,172 @@
-$(document).ready ->
-  # Canvas
-  canvas = $("#canvas")[0]
-  ctx = canvas.getContext("2d")
-  w = $("#canvas").width()
-  h = $("#canvas").height()
+class Game extends atom.Game
   
-  # Init variables
-  cw = 10
-  d = " "
-  food = 0
-  score = 0
-  game_loop = null
-  snake_array = [] # an array of cells to make up the snake
+  constructor: (h, w, ps)  ->
+    super
+    atom.input.bind atom.key.LEFT_ARROW, 'move_left'
+    atom.input.bind atom.key.RIGHT_ARROW, 'move_right'
+    atom.input.bind atom.key.UP_ARROW, 'move_up'
+    atom.input.bind atom.key.DOWN_ARROW, 'move_down'
+    atom.input.bind atom.key.SPACE, 'toggle_pause'
+
+    @height = h
+    @width = w
+    @pixelsize = ps
+    atom.canvas.height = @height * @pixelsize 
+    atom.canvas.width = @height * @pixelsize
+    #@showIntro()
+    @startGame()
   
-  init = ->
-    d = "right" # default direction
-    create_snake()
-    create_food() 
-    score = 0;
-    # Move the snake every 60ms
-    clearInterval(game_loop) if game_loop?
-    game_loop = setInterval(paint, 60)
-    return
+  startGame: ->
+    _x = Math.floor(@width / 2)
+    _y = Math.floor(@height / 2)
+    @snake = [ [ _x, _y ], [ --_x, _y ], [ --_x, _y ], [ --_x, _y ] ]
+    @dir = ""
+    @newdir = "right"
+    @score = 0
+    @gstarted = true
+    @gpaused = false
+    @food = []
+    @last_dt = 0.00
+    @delay = 0.08
+    @noshow = true
+    @gpaused = true
+    @genFood()
+    @showIntro()
 
-  create_snake = ->
-    length = 5 # Length of the initial snake
-    snake_array = []
-    for cell_index in [length..1]
-      snake_array.push({x: cell_index, y:0})
+  genFood: ->
+    x = undefined
+    y = undefined
+    loop
+      x = Math.floor(Math.random() * (@width - 1))
+      y = Math.floor(Math.random() * (@height - 1))
+      break unless @testCollision(x, y)
+    @food = [ x, y ]
 
-  # Create a random food cell
-  create_food = ->
-    food =
-      x: Math.round(Math.random()*(w-cw)/cw)
-      y: Math.round(Math.random()*(h-cw)/cw)
+  drawFood: ->
+    atom.context.beginPath()
+    atom.context.arc (@food[0] * @pixelsize) + @pixelsize / 2, (@food[1] * @pixelsize) + @pixelsize / 2, @pixelsize / 2, 0, Math.PI * 2, false
+    atom.context.fill()
+
+  drawSnake: ->
+    i = 0
+    l = @snake.length
+    while i < l
+      x = @snake[i][0]
+      y = @snake[i][1]
+      atom.context.fillRect x * @pixelsize, y * @pixelsize, @pixelsize, @pixelsize
+      i++
+
+  testCollision: (x, y) ->
+    return true  if x < 0 or x > @width - 1
+    return true  if y < 0 or y > @height - 1
+    i = 0
+    l = @snake.length
+
+    while i < l
+      return true  if x is @snake[i][0] and y is @snake[i][1]
+      i++
+    false
   
-  # Paint the snake
-  paint = ->
-    # To avoid the snake trail we need to paint the BG on every frame
-    ctx.fillStyle = "white"
-    ctx.fillRect(0, 0, w, h)
-    ctx.strokeStyle = "black"
-    ctx.strokeRect(0, 0, w, h)
-    
-    # Pop out the tail cell and place it in front of the head cell
-    new_x = snake_array[0].x
-    new_y = snake_array[0].y
+  endGame: ->
+    @gstarted = false
+    atom.context.fillStyle = "rgba(0,0,0,0.8)"
+    atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
+    atom.context.fillStyle = "#fff"
+    atom.context.font = "30px monospace"
+    atom.context.textAlign = "center"
+    atom.context.fillText "Game Over", @width / 2 * @pixelsize, @height / 2 * @pixelsize
+    atom.context.fillStyle = "#fff"
+    atom.context.font = "18px monospace"
+    atom.context.fillText "Score: " + @score, @width / 2 * @pixelsize, @height / 1.5 * @pixelsize
 
-    # Add movement
-    if d is "right"
-      new_x++
-    else if d is "left"
-      new_x--
-    else if d is "up"
-      new_y--
-    else if d is "down"
-      new_y++
-    
-    # This will restart the game if the snake hits the wall 
-    # or if the head of the snake bumps into its body
-    if new_x is -1 or new_x is w/cw or new_y is -1 or new_y is h/cw or check_collision(new_x, new_y, snake_array)
-      # restart game
-      init()
-      return
-    
-    # If the snake eats food create a new head cell
-    # If not, move the tail cell
-    if new_x is food.x and new_y is food.y
-      tail = {x: new_x, y: new_y}
-      score++
-      # Create new food
-      create_food()
+  togglePause: ->
+    unless @gpaused
+      @gpaused = true
+      atom.context.fillStyle = "#fff"
+      atom.context.font = "20px sans-serif"
+      atom.context.textAlign = "center"
+      atom.context.fillText "Paused", @width / 2 * @pixelsize, @height / 2 * @pixelsize
     else
-      tail = snake_array.pop() # pops out the last cell
-      tail.x = new_x
-      tail.y = new_y
-  
-    snake_array.unshift(tail) #put the tail as the first cell
-    
-    # Paint the cells of the snake
-    for cell in snake_array
-      paint_cell(cell.x, cell.y)
-    
-    # paint the food
-    paint_cell(food.x, food.y)
-    # Display the score
-    score_text = "Score: " + score
-    ctx.fillText(score_text, 5, h-5)
-  
-  # Generic function to paint cells
-  paint_cell = (x, y) ->
-    ctx.fillStyle = "blue"
-    ctx.fillRect(x*cw, y*cw, cw, cw)
-    ctx.strokeStyle = "white"
-    ctx.strokeRect(x*cw, y*cw, cw, cw)
-  
-  # Check if the provided x/y coordinates exist in an array of cells or not
-  check_collision = (x, y, array) ->
-    for cell in array
-      return true if cell.x is x and cell.y is y
-    return false
-  
-  # Keyboard controls
-  $(document).keydown (e) ->
-    key = e.which;
-    if key is 37 and d isnt "right"
-      d = "left"
-      console.log "left"
-    else if key is 38 and d isnt "down"
-      console.log "down"
-      d = "up"
-    else if key is 39 and d isnt "left"
-      console.log "right"
-      d = "right"
-    else if key is 40 and d isnt "up"
-      console.log "down"
-      d = "down"
-    return
+      @gpaused = false
+      @noshow = false 
 
-  
-  init()
-  return
+  showIntro: ->
+    atom.context.fillStyle = "#000"
+    atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
+    atom.context.fillStyle = "#fff"
+    atom.context.font = "30px sans-serif"
+    atom.context.textAlign = "center"
+    #atom.context.fillText "Snake", @width / 2 * @pixelsize, @height / 4 * @pixelsize, @width * @pixelsize
+    atom.context.textAlign = "left"
+    atom.context.font = "30px monospace"
+    atom.context.fillText "Instructions:", 2 * @pixelsize, @height / 3 * @pixelsize, @width * @pixelsize
+    atom.context.font = "18px monospace"
+    atom.context.fillText "Use arrows to change the snake's direction.", 2 * @pixelsize, @height / 2.5 * @pixelsize
+    atom.context.fillText "Press space to start/pause the game.", 2 * @pixelsize, @height / 2.3 * @pixelsize
+    #atom.context.textAlign = "center"
+    atom.context.fillText "Pro-tip: Try pressing space now!", 2 * @pixelsize, @height / 1.9 * @pixelsize
+
+  update: (dt) ->
+
+    if atom.input.pressed 'move_left'
+      @newdir = "left"  unless @dir is "right"
+      console.log "left"
+    else if atom.input.pressed 'move_up'
+      @newdir = "up"  unless @dir is "down"
+    else if atom.input.pressed  'move_right'
+      @newdir = "right" unless @dir is "left"
+    else if atom.input.pressed  'move_down'
+      @newdir = "down"  unless @dir is "up"
+    else if atom.input.pressed  'toggle_pause'
+      unless @gstarted
+        # uncomment to restart via space bar
+        # @startGame()
+      else
+        @togglePause()
+
+    # Slow down the game
+    if @last_dt < @delay
+      @last_dt += dt
+      return
+    else 
+      @last_dt = 0.00
+    
+    # Don#t do anything id game is paused 
+    return if not @gstarted or @gpaused
+
+    # Update snake
+    x = @snake[0][0]
+    y = @snake[0][1]
+    switch @newdir
+      when "up"
+        y--
+      when "right"
+        x++
+      when "down"
+        y++
+      when "left"
+        x--
+    
+    # Check for collision with self or wall
+    if @testCollision(x, y)
+      @endGame()
+      return
+
+    # Move the snake
+    @snake.unshift [ x, y ]
+    if x is @food[0] and y is @food[1]
+      @score++
+      @genFood()
+    else
+      @snake.pop()
+    @dir = @newdir
+    atom.context.fillStyle = "#000"
+    atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
+    atom.context.fillStyle = "#fff"
+
+  draw: ->
+    @drawFood() unless @noshow
+    @drawSnake() unless @noshow
+
+game = new Game(20, 20, 30)
+game.run()
