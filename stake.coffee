@@ -97,7 +97,7 @@ class Game extends atom.Game
     atom.context.fillText mess, x, y
     atom.context.strokeText mess, x, 
 
-    _gaq.push(['_trackEvent', 'Game', 'End', @score])
+    _gaq.push(['_trackEvent', 'Game', 'End', undefined, @score])
 
   togglePause: ->
     unless @gpaused
