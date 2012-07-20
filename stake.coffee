@@ -11,6 +11,7 @@ class Game extends atom.Game
     @height = h
     @width = w
     @pixelsize = ps
+    atom.canvas.style.border = "#fff 1px solid"
     atom.canvas.height = @height * @pixelsize 
     atom.canvas.width = @height * @pixelsize
     #@showIntro()
@@ -69,23 +70,34 @@ class Game extends atom.Game
   
   endGame: ->
     @gstarted = false
-    atom.context.fillStyle = "rgba(0,0,0,0.8)"
-    atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
+    @noshow = true
+    [_x , _y] = [ @width * @pixelsize, @height * @pixelsize ]
     atom.context.fillStyle = "#fff"
-    atom.context.font = "30px monospace"
+    atom.context.strokeStyle = '#000'
+
+    # Game over
+    [mess, x , y] = ["Game Over", _x / 2 , _y / 2]
+    atom.context.font = "bold 30px monospace"
     atom.context.textAlign = "center"
-    atom.context.fillText "Game Over", @width / 2 * @pixelsize, @height / 2 * @pixelsize
-    atom.context.fillStyle = "#fff"
-    atom.context.font = "18px monospace"
-    atom.context.fillText "Score: " + @score, @width / 2 * @pixelsize, @height / 1.5 * @pixelsize
+    atom.context.fillText mess, x, y
+    atom.context.strokeText mess, x, y
+
+    # score
+    atom.context.font = "bold 25px monospace"
+    [mess, x , y] = ["Score: " + @score, _x / 2 , _y / 1.5]
+    atom.context.fillText mess, x, y
+    atom.context.strokeText mess, x, y
 
   togglePause: ->
     unless @gpaused
+      @noshow = true
       @gpaused = true
+      [mess, x , y] = ["Paused", @width / 2 * @pixelsize, @height / 2 * @pixelsize]
       atom.context.fillStyle = "#fff"
-      atom.context.font = "20px sans-serif"
+      atom.context.font = "bold 30px monospace"
       atom.context.textAlign = "center"
-      atom.context.fillText "Paused", @width / 2 * @pixelsize, @height / 2 * @pixelsize
+      atom.context.fillText mess, x, y
+      atom.context.strokeText mess, x, y
     else
       @gpaused = false
       @noshow = false 
@@ -101,10 +113,10 @@ class Game extends atom.Game
     atom.context.font = "30px monospace"
     atom.context.fillText "Instructions:", 2 * @pixelsize, @height / 3 * @pixelsize, @width * @pixelsize
     atom.context.font = "18px monospace"
-    atom.context.fillText "Use arrows to change the snake's direction.", 2 * @pixelsize, @height / 2.5 * @pixelsize
-    atom.context.fillText "Press space to start/pause the game.", 2 * @pixelsize, @height / 2.3 * @pixelsize
+    atom.context.fillText "Use arrows keys to change direction.", 2 * @pixelsize, @height / 2.5 * @pixelsize
+    atom.context.fillText "Press space to start/pause.", 2 * @pixelsize, @height / 2.3 * @pixelsize
     #atom.context.textAlign = "center"
-    atom.context.fillText "Pro-tip: Try pressing space now!", 2 * @pixelsize, @height / 1.9 * @pixelsize
+    atom.context.fillText "Pro-tip: Press space now!", 2 * @pixelsize, @height / 1.9 * @pixelsize
 
   update: (dt) ->
 
@@ -131,7 +143,7 @@ class Game extends atom.Game
     else 
       @last_dt = 0.00
     
-    # Don#t do anything id game is paused 
+    # Don't do anything id game is paused 
     return if not @gstarted or @gpaused
 
     # Update snake
@@ -160,13 +172,17 @@ class Game extends atom.Game
     else
       @snake.pop()
     @dir = @newdir
-    atom.context.fillStyle = "#000"
-    atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
-    atom.context.fillStyle = "#fff"
+
 
   draw: ->
-    @drawFood() unless @noshow
-    @drawSnake() unless @noshow
+    unless @noshow
+      # Erase canvas 
+      atom.context.fillStyle = "#000"
+      atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
+      atom.context.fillStyle = "#fff" 
+      # Draw on canvas
+      @drawFood()
+      @drawSnake()
 
 game = new Game(20, 20, 30)
 game.run()

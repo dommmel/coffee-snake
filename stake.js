@@ -16,6 +16,7 @@ Game = (function(_super) {
     this.height = h;
     this.width = w;
     this.pixelsize = ps;
+    atom.canvas.style.border = "#fff 1px solid";
     atom.canvas.height = this.height * this.pixelsize;
     atom.canvas.width = this.height * this.pixelsize;
     this.startGame();
@@ -26,7 +27,6 @@ Game = (function(_super) {
     _x = Math.floor(this.width / 2);
     _y = Math.floor(this.height / 2);
     this.snake = [[_x, _y], [--_x, _y], [--_x, _y], [--_x, _y]];
-    console.log(this.snake);
     this.dir = "";
     this.newdir = "right";
     this.score = 0;
@@ -87,25 +87,34 @@ Game = (function(_super) {
   };
 
   Game.prototype.endGame = function() {
+    var mess, x, y, _ref, _ref2, _ref3, _x, _y;
     this.gstarted = false;
-    atom.context.fillStyle = "rgba(0,0,0,0.8)";
-    atom.context.fillRect(0, 0, this.width * this.pixelsize, this.height * this.pixelsize);
+    this.noshow = true;
+    _ref = [this.width * this.pixelsize, this.height * this.pixelsize], _x = _ref[0], _y = _ref[1];
     atom.context.fillStyle = "#fff";
-    atom.context.font = "30px monospace";
+    atom.context.strokeStyle = '#000';
+    _ref2 = ["Game Over", _x / 2, _y / 2], mess = _ref2[0], x = _ref2[1], y = _ref2[2];
+    atom.context.font = "bold 30px monospace";
     atom.context.textAlign = "center";
-    atom.context.fillText("Game Over", this.width / 2 * this.pixelsize, this.height / 2 * this.pixelsize);
-    atom.context.fillStyle = "#fff";
-    atom.context.font = "18px monospace";
-    return atom.context.fillText("Score: " + this.score, this.width / 2 * this.pixelsize, this.height / 1.5 * this.pixelsize);
+    atom.context.fillText(mess, x, y);
+    atom.context.strokeText(mess, x, y);
+    atom.context.font = "bold 25px monospace";
+    _ref3 = ["Score: " + this.score, _x / 2, _y / 1.5], mess = _ref3[0], x = _ref3[1], y = _ref3[2];
+    atom.context.fillText(mess, x, y);
+    return atom.context.strokeText(mess, x, y);
   };
 
   Game.prototype.togglePause = function() {
+    var mess, x, y, _ref;
     if (!this.gpaused) {
+      this.noshow = true;
       this.gpaused = true;
+      _ref = ["Paused", this.width / 2 * this.pixelsize, this.height / 2 * this.pixelsize], mess = _ref[0], x = _ref[1], y = _ref[2];
       atom.context.fillStyle = "#fff";
-      atom.context.font = "20px sans-serif";
+      atom.context.font = "bold 30px monospace";
       atom.context.textAlign = "center";
-      return atom.context.fillText("Paused", this.width / 2 * this.pixelsize, this.height / 2 * this.pixelsize);
+      atom.context.fillText(mess, x, y);
+      return atom.context.strokeText(mess, x, y);
     } else {
       this.gpaused = false;
       return this.noshow = false;
@@ -122,9 +131,9 @@ Game = (function(_super) {
     atom.context.font = "30px monospace";
     atom.context.fillText("Instructions:", 2 * this.pixelsize, this.height / 3 * this.pixelsize, this.width * this.pixelsize);
     atom.context.font = "18px monospace";
-    atom.context.fillText("Use arrows to change the snake's direction.", 2 * this.pixelsize, this.height / 2.5 * this.pixelsize);
-    atom.context.fillText("Press space to start/pause the game.", 2 * this.pixelsize, this.height / 2.3 * this.pixelsize);
-    return atom.context.fillText("Pro-tip: Try pressing space now!", 2 * this.pixelsize, this.height / 1.9 * this.pixelsize);
+    atom.context.fillText("Use arrows keys to change direction.", 2 * this.pixelsize, this.height / 2.5 * this.pixelsize);
+    atom.context.fillText("Press space to start/pause.", 2 * this.pixelsize, this.height / 2.3 * this.pixelsize);
+    return atom.context.fillText("Pro-tip: Press space now!", 2 * this.pixelsize, this.height / 1.9 * this.pixelsize);
   };
 
   Game.prototype.update = function(dt) {
@@ -176,15 +185,17 @@ Game = (function(_super) {
     } else {
       this.snake.pop();
     }
-    this.dir = this.newdir;
-    atom.context.fillStyle = "#000";
-    atom.context.fillRect(0, 0, this.width * this.pixelsize, this.height * this.pixelsize);
-    return atom.context.fillStyle = "#fff";
+    return this.dir = this.newdir;
   };
 
   Game.prototype.draw = function() {
-    if (!this.noshow) this.drawFood();
-    if (!this.noshow) return this.drawSnake();
+    if (!this.noshow) {
+      atom.context.fillStyle = "#000";
+      atom.context.fillRect(0, 0, this.width * this.pixelsize, this.height * this.pixelsize);
+      atom.context.fillStyle = "#fff";
+      this.drawFood();
+      return this.drawSnake();
+    }
   };
 
   return Game;
