@@ -106,7 +106,7 @@ Game = (function(_super) {
     atom.context.font = "bold 25px monospace";
     _ref2 = ["Score: " + this.score, this.tx / 2, this.ty / 1.7], mess = _ref2[0], x = _ref2[1], y = _ref2[2];
     atom.context.fillText(mess, x, y);
-    return atom.context.strokeText(mess, x, _gaq.push(['_trackEvent', 'Game', 'End', this.score]));
+    return atom.context.strokeText(mess, x, _gaq.push(['_trackEvent', 'Game', 'End', void 0, this.score]));
   };
 
   Game.prototype.togglePause = function() {
