@@ -95,7 +95,9 @@ class Game extends atom.Game
     atom.context.font = "bold 25px monospace"
     [mess, x , y] = ["Score: " + @score, @tx / 2 , @ty / 1.7]
     atom.context.fillText mess, x, y
-    atom.context.strokeText mess, x, y
+    atom.context.strokeText mess, x, 
+
+    _gaq.push(['_trackEvent', 'Game', 'End', @score])
 
   togglePause: ->
     unless @gpaused
@@ -107,7 +109,9 @@ class Game extends atom.Game
       atom.context.textAlign = "center"
       atom.context.fillText mess, x, y
       atom.context.strokeText mess, x, y
+      _gaq.push(['_trackEvent', 'Game', 'Pause'])
     else
+      _gaq.push(['_trackEvent', 'Game', 'Resume'])
       @gpaused = false
       @noshow = false 
 
@@ -127,7 +131,6 @@ class Game extends atom.Game
     # Check keyboard input
     if atom.input.pressed 'move_left'
       @newdir = "left"  unless @dir is "right"
-      console.log "left"
     else if atom.input.pressed 'move_up'
       @newdir = "up"  unless @dir is "down"
     else if atom.input.pressed  'move_right'
@@ -138,6 +141,7 @@ class Game extends atom.Game
       unless @gstarted
         @eraseCanvas()
         @startGame()
+        _gaq.push(['_trackEvent', 'Game', 'Start'])
       else
         @togglePause()
 

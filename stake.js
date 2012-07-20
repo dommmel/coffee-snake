@@ -106,7 +106,7 @@ Game = (function(_super) {
     atom.context.font = "bold 25px monospace";
     _ref2 = ["Score: " + this.score, this.tx / 2, this.ty / 1.7], mess = _ref2[0], x = _ref2[1], y = _ref2[2];
     atom.context.fillText(mess, x, y);
-    return atom.context.strokeText(mess, x, y);
+    return atom.context.strokeText(mess, x, _gaq.push(['_trackEvent', 'Game', 'End', this.score]));
   };
 
   Game.prototype.togglePause = function() {
@@ -119,8 +119,10 @@ Game = (function(_super) {
       atom.context.font = "bold 30px monospace";
       atom.context.textAlign = "center";
       atom.context.fillText(mess, x, y);
-      return atom.context.strokeText(mess, x, y);
+      atom.context.strokeText(mess, x, y);
+      return _gaq.push(['_trackEvent', 'Game', 'Pause']);
     } else {
+      _gaq.push(['_trackEvent', 'Game', 'Resume']);
       this.gpaused = false;
       return this.noshow = false;
     }
@@ -143,7 +145,6 @@ Game = (function(_super) {
     var x, y;
     if (atom.input.pressed('move_left')) {
       if (this.dir !== "right") this.newdir = "left";
-      console.log("left");
     } else if (atom.input.pressed('move_up')) {
       if (this.dir !== "down") this.newdir = "up";
     } else if (atom.input.pressed('move_right')) {
@@ -154,6 +155,7 @@ Game = (function(_super) {
       if (!this.gstarted) {
         this.eraseCanvas();
         this.startGame();
+        _gaq.push(['_trackEvent', 'Game', 'Start']);
       } else {
         this.togglePause();
       }
