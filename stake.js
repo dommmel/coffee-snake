@@ -134,7 +134,7 @@ Game = (function(_super) {
     atom.context.font = "30px monospace";
     atom.context.fillText("Instructions:", 2 * this.pixelsize, this.ty / 3);
     atom.context.font = "18px monospace";
-    atom.context.fillText("Use arrows keys to change direction.", 2 * this.pixelsize, this.ty / 2.3);
+    atom.context.fillText("Use arrow keys to change direction.", 2 * this.pixelsize, this.ty / 2.3);
     atom.context.fillText("Press space to start/pause.", 2 * this.pixelsize, this.ty / 2.1);
     return atom.context.fillText("Pro-tip: Press space now!", 2 * this.pixelsize, this.ty / 1.7);
   };
@@ -151,7 +151,10 @@ Game = (function(_super) {
     } else if (atom.input.pressed('move_down')) {
       if (this.dir !== "up") this.newdir = "down";
     } else if (atom.input.pressed('toggle_pause')) {
-      if (!this.gstarted) {} else {
+      if (!this.gstarted) {
+        this.eraseCanvas();
+        this.startGame();
+      } else {
         this.togglePause();
       }
     }
@@ -191,11 +194,15 @@ Game = (function(_super) {
     return this.dir = this.newdir;
   };
 
+  Game.prototype.eraseCanvas = function() {
+    atom.context.fillStyle = "#000";
+    atom.context.fillRect(0, 0, this.width * this.pixelsize, this.height * this.pixelsize);
+    return atom.context.fillStyle = "#fff";
+  };
+
   Game.prototype.draw = function() {
     if (!this.noshow) {
-      atom.context.fillStyle = "#000";
-      atom.context.fillRect(0, 0, this.width * this.pixelsize, this.height * this.pixelsize);
-      atom.context.fillStyle = "#fff";
+      this.eraseCanvas();
       this.drawFood();
       return this.drawSnake();
     }

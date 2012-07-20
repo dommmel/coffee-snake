@@ -119,7 +119,7 @@ class Game extends atom.Game
     atom.context.font = "30px monospace"
     atom.context.fillText "Instructions:", 2 * @pixelsize, @ty / 3
     atom.context.font = "18px monospace"
-    atom.context.fillText "Use arrows keys to change direction.", 2 * @pixelsize, @ty / 2.3
+    atom.context.fillText "Use arrow keys to change direction.", 2 * @pixelsize, @ty / 2.3
     atom.context.fillText "Press space to start/pause.", 2 * @pixelsize, @ty / 2.1 
     atom.context.fillText "Pro-tip: Press space now!", 2 * @pixelsize, @ty / 1.7 
 
@@ -136,8 +136,8 @@ class Game extends atom.Game
       @newdir = "down"  unless @dir is "up"
     else if atom.input.pressed  'toggle_pause'
       unless @gstarted
-        # uncomment to restart via space bar
-        # @startGame()
+        @eraseCanvas()
+        @startGame()
       else
         @togglePause()
 
@@ -178,14 +178,14 @@ class Game extends atom.Game
       @snake.pop()
     @dir = @newdir
 
+  eraseCanvas: ->
+    atom.context.fillStyle = "#000"
+    atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
+    atom.context.fillStyle = "#fff" 
 
   draw: ->
     unless @noshow
-      # Erase canvas 
-      atom.context.fillStyle = "#000"
-      atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
-      atom.context.fillStyle = "#fff" 
-      # Draw on canvas
+      @eraseCanvas()
       @drawFood()
       @drawSnake()
 
