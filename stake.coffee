@@ -11,13 +11,21 @@ class Game extends atom.Game
     @height = h
     @width = w
     @pixelsize = ps
+
+    # Style the canvas
+    window.onresize = (e) -> return
+    canvas_container = document.getElementById('canvas_container')
+    canvas_container.style.width = @width *  @pixelsize + "px"
     atom.canvas.style.border = "#fff 1px solid"
+    atom.canvas.style.position = "relative"
     atom.canvas.height = @height * @pixelsize 
-    atom.canvas.width = @height * @pixelsize
-    #@showIntro()
+    atom.canvas.width = @width * @pixelsize
+
+    #Start the game
     @startGame()
   
   startGame: ->
+    # Initialize 
     _x = Math.floor(@width / 2)
     _y = Math.floor(@height / 2)
     @snake = [ [ _x, _y ], [ --_x, _y ], [ --_x, _y ], [ --_x, _y ] ]
@@ -31,8 +39,10 @@ class Game extends atom.Game
     @delay = 0.08
     @noshow = true
     @gpaused = true
-    @genFood()
-    @showIntro()
+    [@tx , @ty] = [@width * @pixelsize, @height * @pixelsize]
+
+    @genFood() # generate food pixel
+    @showIntro() # show intro screen
 
   genFood: ->
     x = undefined
@@ -71,12 +81,11 @@ class Game extends atom.Game
   endGame: ->
     @gstarted = false
     @noshow = true
-    [_x , _y] = [ @width * @pixelsize, @height * @pixelsize ]
     atom.context.fillStyle = "#fff"
     atom.context.strokeStyle = '#000'
 
     # Game over
-    [mess, x , y] = ["Game Over", _x / 2 , _y / 2]
+    [mess, x , y] = ["Game Over", @tx / 2 , @ty / 2.4]
     atom.context.font = "bold 30px monospace"
     atom.context.textAlign = "center"
     atom.context.fillText mess, x, y
@@ -84,7 +93,7 @@ class Game extends atom.Game
 
     # score
     atom.context.font = "bold 25px monospace"
-    [mess, x , y] = ["Score: " + @score, _x / 2 , _y / 1.5]
+    [mess, x , y] = ["Score: " + @score, @tx / 2 , @ty / 1.7]
     atom.context.fillText mess, x, y
     atom.context.strokeText mess, x, y
 
@@ -92,7 +101,7 @@ class Game extends atom.Game
     unless @gpaused
       @noshow = true
       @gpaused = true
-      [mess, x , y] = ["Paused", @width / 2 * @pixelsize, @height / 2 * @pixelsize]
+      [mess, x , y] = ["Paused", @tx / 2, @ty / 2]
       atom.context.fillStyle = "#fff"
       atom.context.font = "bold 30px monospace"
       atom.context.textAlign = "center"
@@ -103,23 +112,19 @@ class Game extends atom.Game
       @noshow = false 
 
   showIntro: ->
-    atom.context.fillStyle = "#000"
-    atom.context.fillRect 0, 0, @width * @pixelsize, @height * @pixelsize
     atom.context.fillStyle = "#fff"
     atom.context.font = "30px sans-serif"
     atom.context.textAlign = "center"
-    #atom.context.fillText "Snake", @width / 2 * @pixelsize, @height / 4 * @pixelsize, @width * @pixelsize
     atom.context.textAlign = "left"
     atom.context.font = "30px monospace"
-    atom.context.fillText "Instructions:", 2 * @pixelsize, @height / 3 * @pixelsize, @width * @pixelsize
+    atom.context.fillText "Instructions:", 2 * @pixelsize, @ty / 3
     atom.context.font = "18px monospace"
-    atom.context.fillText "Use arrows keys to change direction.", 2 * @pixelsize, @height / 2.5 * @pixelsize
-    atom.context.fillText "Press space to start/pause.", 2 * @pixelsize, @height / 2.3 * @pixelsize
-    #atom.context.textAlign = "center"
-    atom.context.fillText "Pro-tip: Press space now!", 2 * @pixelsize, @height / 1.9 * @pixelsize
+    atom.context.fillText "Use arrows keys to change direction.", 2 * @pixelsize, @ty / 2.3
+    atom.context.fillText "Press space to start/pause.", 2 * @pixelsize, @ty / 2.1 
+    atom.context.fillText "Pro-tip: Press space now!", 2 * @pixelsize, @ty / 1.7 
 
   update: (dt) ->
-
+    # Check keyboard input
     if atom.input.pressed 'move_left'
       @newdir = "left"  unless @dir is "right"
       console.log "left"
@@ -143,7 +148,7 @@ class Game extends atom.Game
     else 
       @last_dt = 0.00
     
-    # Don't do anything id game is paused 
+    # Don't do anything if game is paused or stopped
     return if not @gstarted or @gpaused
 
     # Update snake
@@ -184,5 +189,5 @@ class Game extends atom.Game
       @drawFood()
       @drawSnake()
 
-game = new Game(20, 20, 30)
+game = new Game(15, 20, 30)
 game.run()

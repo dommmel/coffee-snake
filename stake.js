@@ -7,6 +7,7 @@ Game = (function(_super) {
   __extends(Game, _super);
 
   function Game(h, w, ps) {
+    var canvas_container;
     Game.__super__.constructor.apply(this, arguments);
     atom.input.bind(atom.key.LEFT_ARROW, 'move_left');
     atom.input.bind(atom.key.RIGHT_ARROW, 'move_right');
@@ -16,14 +17,18 @@ Game = (function(_super) {
     this.height = h;
     this.width = w;
     this.pixelsize = ps;
+    window.onresize = function(e) {};
+    canvas_container = document.getElementById('canvas_container');
+    canvas_container.style.width = this.width * this.pixelsize + "px";
     atom.canvas.style.border = "#fff 1px solid";
+    atom.canvas.style.position = "relative";
     atom.canvas.height = this.height * this.pixelsize;
-    atom.canvas.width = this.height * this.pixelsize;
+    atom.canvas.width = this.width * this.pixelsize;
     this.startGame();
   }
 
   Game.prototype.startGame = function() {
-    var _x, _y;
+    var _ref, _x, _y;
     _x = Math.floor(this.width / 2);
     _y = Math.floor(this.height / 2);
     this.snake = [[_x, _y], [--_x, _y], [--_x, _y], [--_x, _y]];
@@ -37,6 +42,7 @@ Game = (function(_super) {
     this.delay = 0.08;
     this.noshow = true;
     this.gpaused = true;
+    _ref = [this.width * this.pixelsize, this.height * this.pixelsize], this.tx = _ref[0], this.ty = _ref[1];
     this.genFood();
     return this.showIntro();
   };
@@ -87,19 +93,18 @@ Game = (function(_super) {
   };
 
   Game.prototype.endGame = function() {
-    var mess, x, y, _ref, _ref2, _ref3, _x, _y;
+    var mess, x, y, _ref, _ref2;
     this.gstarted = false;
     this.noshow = true;
-    _ref = [this.width * this.pixelsize, this.height * this.pixelsize], _x = _ref[0], _y = _ref[1];
     atom.context.fillStyle = "#fff";
     atom.context.strokeStyle = '#000';
-    _ref2 = ["Game Over", _x / 2, _y / 2], mess = _ref2[0], x = _ref2[1], y = _ref2[2];
+    _ref = ["Game Over", this.tx / 2, this.ty / 2.4], mess = _ref[0], x = _ref[1], y = _ref[2];
     atom.context.font = "bold 30px monospace";
     atom.context.textAlign = "center";
     atom.context.fillText(mess, x, y);
     atom.context.strokeText(mess, x, y);
     atom.context.font = "bold 25px monospace";
-    _ref3 = ["Score: " + this.score, _x / 2, _y / 1.5], mess = _ref3[0], x = _ref3[1], y = _ref3[2];
+    _ref2 = ["Score: " + this.score, this.tx / 2, this.ty / 1.7], mess = _ref2[0], x = _ref2[1], y = _ref2[2];
     atom.context.fillText(mess, x, y);
     return atom.context.strokeText(mess, x, y);
   };
@@ -109,7 +114,7 @@ Game = (function(_super) {
     if (!this.gpaused) {
       this.noshow = true;
       this.gpaused = true;
-      _ref = ["Paused", this.width / 2 * this.pixelsize, this.height / 2 * this.pixelsize], mess = _ref[0], x = _ref[1], y = _ref[2];
+      _ref = ["Paused", this.tx / 2, this.ty / 2], mess = _ref[0], x = _ref[1], y = _ref[2];
       atom.context.fillStyle = "#fff";
       atom.context.font = "bold 30px monospace";
       atom.context.textAlign = "center";
@@ -122,18 +127,16 @@ Game = (function(_super) {
   };
 
   Game.prototype.showIntro = function() {
-    atom.context.fillStyle = "#000";
-    atom.context.fillRect(0, 0, this.width * this.pixelsize, this.height * this.pixelsize);
     atom.context.fillStyle = "#fff";
     atom.context.font = "30px sans-serif";
     atom.context.textAlign = "center";
     atom.context.textAlign = "left";
     atom.context.font = "30px monospace";
-    atom.context.fillText("Instructions:", 2 * this.pixelsize, this.height / 3 * this.pixelsize, this.width * this.pixelsize);
+    atom.context.fillText("Instructions:", 2 * this.pixelsize, this.ty / 3);
     atom.context.font = "18px monospace";
-    atom.context.fillText("Use arrows keys to change direction.", 2 * this.pixelsize, this.height / 2.5 * this.pixelsize);
-    atom.context.fillText("Press space to start/pause.", 2 * this.pixelsize, this.height / 2.3 * this.pixelsize);
-    return atom.context.fillText("Pro-tip: Press space now!", 2 * this.pixelsize, this.height / 1.9 * this.pixelsize);
+    atom.context.fillText("Use arrows keys to change direction.", 2 * this.pixelsize, this.ty / 2.3);
+    atom.context.fillText("Press space to start/pause.", 2 * this.pixelsize, this.ty / 2.1);
+    return atom.context.fillText("Pro-tip: Press space now!", 2 * this.pixelsize, this.ty / 1.7);
   };
 
   Game.prototype.update = function(dt) {
@@ -202,6 +205,6 @@ Game = (function(_super) {
 
 })(atom.Game);
 
-game = new Game(20, 20, 30);
+game = new Game(15, 20, 30);
 
 game.run();
