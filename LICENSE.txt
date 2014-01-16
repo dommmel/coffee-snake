@@ -1,0 +1,2 @@
+This software is made available freely for non-commercial use under the GNU General Public License.
+For commercial licensing please contact the author.
