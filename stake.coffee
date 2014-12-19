@@ -95,7 +95,7 @@ class Game extends atom.Game
     atom.context.font = "bold 25px monospace"
     [mess, x , y] = ["Score: " + @score, @tx / 2 , @ty / 1.7]
     atom.context.fillText mess, x, y
-    atom.context.strokeText mess, x, 
+    atom.context.strokeText mess, x, y
 
     _gaq.push(['_trackEvent', 'Game', 'End', undefined, @score])
 
